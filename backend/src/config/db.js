@@ -1,4 +1,4 @@
-const { Sequelize } = require('sequelize');
+const { Sequelize, DataTypes } = require('sequelize');
 
 const dotenv = require('dotenv');
 
@@ -22,4 +22,6 @@ const connectDb = async () => {
   }
 };
 
-module.exports = { connectDb, sequelize, Sequelize };
+module.exports = {
+  connectDb, sequelize, Sequelize, DataTypes,
+};
