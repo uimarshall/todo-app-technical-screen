@@ -1,3 +1,7 @@
+/* eslint-disable comma-dangle */
+/* eslint-disable no-return-assign */
+const bcrypt = require('bcryptjs');
+
 module.exports = (sequelize, Sequelize) => {
   const User = sequelize.define('users', {
     name: {
@@ -26,5 +30,9 @@ module.exports = (sequelize, Sequelize) => {
       allowNull: false,
     },
   });
+  User.addHook(
+    'beforeCreate',
+    (user) => (user.password = bcrypt.hashSync(user.password, 10))
+  );
   return User;
 };
