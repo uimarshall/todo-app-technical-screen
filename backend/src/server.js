@@ -6,6 +6,11 @@ const { connectDb, sequelize } = require('./config/db');
 dotenv.config({ path: 'backend/src/config/.env' });
 const app = express();
 
+// A catch-all route for anything the webservice does not define.
+app.get('*', (req, res) => res.status(404).send({
+  message: 'No Todos to see here, make sure you used the correct Link!',
+}));
+
 const port = process.env.PORT || 5000;
 
 app.listen(port, async () => {
