@@ -1,3 +1,4 @@
+/* eslint-disable func-names */
 /* eslint-disable no-underscore-dangle */
 /* eslint-disable comma-dangle */
 /* eslint-disable no-return-assign */
@@ -37,8 +38,13 @@ module.exports = (sequelize, Sequelize) => {
     (user) => (user.password = bcrypt.hashSync(user.password, 10))
   );
 
-  User.prototype.testMethod = function () {
-    console.log('This is an instance method log');
+  // Compare user password
+  User.prototype.comparePassword = async function (currEnteredPassword) {
+    const passwordMatch = await bcrypt.compare(
+      currEnteredPassword,
+      this.password
+    );
+    return passwordMatch;
   };
 
   // Return JWT token
@@ -65,6 +71,6 @@ module.exports = (sequelize, Sequelize) => {
     this.resetPasswordExpire = Date.now() + 30 * 60 * 1000;
     return resetToken;
   };
-
+  // User.sync();
   return User;
 };
