@@ -1,6 +1,8 @@
+/* eslint-disable consistent-return */
 const catchAsyncErrors = require('../middlewares/catchAsyncErrors');
 const db = require('../models');
 const ErrorHandler = require('../utils/errorHandler');
+const sendToken = require('../utils/jwtToken');
 
 const User = db.user;
 
@@ -15,12 +17,14 @@ exports.registerUser = catchAsyncErrors(async (req, res) => {
     password,
   });
 
-  const token = newUser.getJwtToken();
+  sendToken(newUser, 201, res);
 
-  res.status(201).json({
-    success: true,
-    token,
-  });
+  // const token = newUser.getJwtToken();
+
+  // res.status(201).json({
+  //   success: true,
+  //   token,
+  // });
 });
 
 // @desc: Login a user
@@ -37,9 +41,6 @@ exports.loginUser = catchAsyncErrors(async (req, res, next) => {
   // Find user in database
   const userFound = await User.findOne({
     where: { email },
-    // attributes: {
-    //   exclude: 'password',
-    // },
   });
   if (!userFound) {
     return next(new ErrorHandler('Invalid email or password', 401));
@@ -53,12 +54,13 @@ exports.loginUser = catchAsyncErrors(async (req, res, next) => {
 
   // sendToken(userFound, 200, res);
 
-  let token = userFound.getJwtToken();
-  token = `Bearer ${token}`;
+  // let token = userFound.getJwtToken();
+  // token = `Bearer ${token}`;
+  sendToken(userFound, 200, res);
 
-  return res.status(200).json({
-    success: true,
-    token,
-    userFound,
-  });
+  // return res.status(200).json({
+  //   success: true,
+  //   token,
+  //   userFound,
+  // });
 });

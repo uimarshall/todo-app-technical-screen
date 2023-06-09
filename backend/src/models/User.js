@@ -33,6 +33,7 @@ module.exports = (sequelize, Sequelize) => {
       allowNull: false,
     },
   });
+
   User.addHook(
     'beforeCreate',
     (user) => (user.password = bcrypt.hashSync(user.password, 10))
@@ -71,6 +72,9 @@ module.exports = (sequelize, Sequelize) => {
     this.resetPasswordExpire = Date.now() + 30 * 60 * 1000;
     return resetToken;
   };
-  // User.sync();
+  // User.sync({ alter: true }).then(() => {
+  //   const user = User.build();
+  //   return user.save();
+  // });
   return User;
 };
