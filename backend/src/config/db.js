@@ -23,5 +23,8 @@ const connectDb = async () => {
 };
 
 module.exports = {
-  connectDb, sequelize, Sequelize, DataTypes,
+  connectDb,
+  sequelize,
+  Sequelize,
+  DataTypes,
 };

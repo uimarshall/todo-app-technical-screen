@@ -1,44 +1,80 @@
-const { sequelize, DataTypes } = require('../config/db');
+/* eslint-disable func-names */
+/* eslint-disable no-underscore-dangle */
+/* eslint-disable comma-dangle */
+/* eslint-disable no-return-assign */
+const bcrypt = require('bcryptjs');
+const jwt = require('jsonwebtoken');
 
-const User = sequelize.define('User', {
-  // Model attributes are defined here
-  name: {
-    type: DataTypes.STRING,
-    allowNull: false,
-    validate: {
-      notNull: {
-        msg: 'Please enter your name',
+module.exports = (sequelize, Sequelize) => {
+  const User = sequelize.define('users', {
+    name: {
+      type: Sequelize.STRING,
+      allowNull: false,
+      validate: {
+        notNull: {
+          msg: 'Please enter your name',
+        },
+        len: {
+          args: [3, 32],
+          msg: 'Your name must not exceed 32 characters',
+        },
       },
-      len: {
-        args: [3, 32],
-        msg: 'Your name must not exceed 32 characters',
+    },
+    email: {
+      type: Sequelize.STRING,
+      allowNull: false,
+      unique: true,
+      validate: {
+        isEmail: { msg: 'Please enter a valid email address' },
       },
-      trim: true,
     },
-  },
-  email: {
-    type: DataTypes.STRING,
-    allowNull: false,
-    unique: true,
-    validate: {
-      isEmail: true,
-      msg: 'Please enter a valid email address.',
+    password: {
+      type: Sequelize.STRING,
+      allowNull: false,
     },
-  },
-  password: {
-    type: DataTypes.STRING,
-    allowNull: false,
-    validate: {
-      min: 6,
-      msg: 'Your password must be at least 6 characters',
-    },
+  });
 
-    // set(value) {
-    //   this.setDataValue('password', hash(value));
-    // },
-  },
-});
+  User.addHook(
+    'beforeCreate',
+    (user) => (user.password = bcrypt.hashSync(user.password, 10))
+  );
 
-User.sync();
+  // Compare user password
+  User.prototype.comparePassword = async function (currEnteredPassword) {
+    const passwordMatch = await bcrypt.compare(
+      currEnteredPassword,
+      this.password
+    );
+    return passwordMatch;
+  };
 
-module.exports = User;
+  // Return JWT token
+  User.prototype.getJwtToken = function () {
+    return jwt.sign({ id: this._id }, process.env.JWT_SECRET, {
+      expiresIn: process.env.JWT_EXPIRATION_TIME,
+    });
+  };
+
+  // Generate password reset token(3:55)
+
+  User.prototype.getResetPasswordToken = function () {
+    // Generate token
+    const resetToken = crypto.randomBytes(20).toString('hex');
+
+    // Hash/encrypt token and set to resetPasswordToken
+    // This is saved in the database
+    this.resetPasswordToken = crypto
+      .createHash('sha256')
+      .update(resetToken)
+      .digest('hex');
+
+    // Set token expire time in seconds(30mins)
+    this.resetPasswordExpire = Date.now() + 30 * 60 * 1000;
+    return resetToken;
+  };
+  // User.sync({ alter: true }).then(() => {
+  //   const user = User.build();
+  //   return user.save();
+  // });
+  return User;
+};
