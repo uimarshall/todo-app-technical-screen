@@ -39,6 +39,13 @@ module.exports = (sequelize, Sequelize) => {
     (user) => (user.password = bcrypt.hashSync(user.password, 10))
   );
 
+  User.associate = (models) => {
+    User.hasMany(models.Todo, {
+      foreignKey: 'todoId',
+      as: 'todos',
+    });
+  };
+
   // Compare user password
   User.prototype.comparePassword = async function (currEnteredPassword) {
     const passwordMatch = await bcrypt.compare(
